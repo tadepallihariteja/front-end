@@ -1,0 +1,60 @@
+body{
+    background: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0; /* Added to remove default browser margins */
+}
+
+.card {
+    text-align: center;
+    width: 300px;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(13, 134, 21, 0.1); /* Optional: Adds a nice shadow to see the card boundaries */
+}
+
+/* Changed from .img to img to target the HTML tag directly */
+img{
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+}
+
+button{
+    background-color: blue;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: rgb(238, 114, 114);
+}
+body{
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+
+    background-image: url("https://images.unsplash.com/photo-1518770660439-4636190af475?w=1600");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+
+.card{
+    width: 300px;
+    padding: 20px;
+    text-align: center;
+    background: rgba(255,255,255,0.9);
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+}
