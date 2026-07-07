@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Registration Portal</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial, sans-serif;
+    background:#f2f2f2;
+}
+
+header{
+    background:#0077cc;
+    color:white;
+    text-align:center;
+    padding:20px;
+}
+
+.container{
+    width:80%;
+    margin:30px auto;
+}
+
+form{
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0px 0px 10px gray;
+}
+
+label{
+    font-weight:bold;
+}
+
+input,select{
+    width:100%;
+    padding:10px;
+    margin-top:5px;
+    margin-bottom:15px;
+}
+
+button{
+    background:#0077cc;
+    color:white;
+    border:none;
+    padding:10px 20px;
+    cursor:pointer;
+    border-radius:5px;
+}
+
+button:hover{
+    background:green;
+}
+
+#studentList{
+    margin-top:30px;
+}
+
+.card{
+    background:white;
+    padding:15px;
+    margin-bottom:15px;
+    border-radius:10px;
+    box-shadow:0px 0px 10px gray;
+}
+
+.card h3{
+    color:#0077cc;
+    margin-bottom:10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<h1>Student Management Portal</h1>
+
+<p>Registration Form using JavaScript</p>
+
+</header>
+
+<div class="container">
+
+<h2>Student Registration Form</h2>
+
+<form id="studentForm">
+
+<label>Student Name</label>
+
+<input type="text" id="name" placeholder="Enter Name">
+
+<label>Email</label>
+
+<input type="email" id="email" placeholder="Enter Email">
+
+<label>Age</label>
+
+<input type="number" id="age" placeholder="Enter Age">
+
+<label>Course</label>
+
+<select id="course">
+
+<option value="">Select Course</option>
+
+<option>HTML</option>
+
+<option>CSS</option>
+
+<option>JavaScript</option>
+
+<option>Java</option>
+
+<option>Python</option>
+
+</select>
+
+<button type="button" onclick="registerStudent()">
+
+Register
+
+</button>
+
+</form>
+
+<h2 style="margin-top:30px;">Registered Students</h2>
+
+<div id="studentList"></div>
+
+</div>
+
+<script>
+
+// Array to store students
+
+let students = [];
+
+function registerStudent(){
+
+    let name = document.getElementById("name").value;
+
+    let email = document.getElementById("email").value;
+
+    let age = document.getElementById("age").value;
+
+    let course = document.getElementById("course").value;
+
+    if(name=="" || email=="" || age=="" || course==""){
+
+        alert("Please fill all fields");
+
+        return;
+
+    }
+
+    let student={
+
+        name:name,
+
+        email:email,
+
+        age:age,
+
+        course:course
+
+    };
+
+    students.push(student);
+
+    displayStudents();
+
+    document.getElementById("studentForm").reset();
+
+}
+
+function displayStudents(){
+
+    let output="";
+
+    students.forEach(function(student,index){
+
+        output += `
+
+        <div class="card">
+
+        <h3>Student ${index+1}</h3>
+
+        <p><strong>Name:</strong> ${student.name}</p>
+
+        <p><strong>Email:</strong> ${student.email}</p>
+
+        <p><strong>Age:</strong> ${student.age}</p>
+
+        <p><strong>Course:</strong> ${student.course}</p>
+
+        </div>
+
+        `;
+
+    });
+
+    document.getElementById("studentList").innerHTML = output;
+
+}
+
+</script>
+
+</body>
+</html>

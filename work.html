@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A PAGE OF PLAYING CARDS</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    background:#0b5d1e;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
+.cards{
+    display:flex;
+    gap:20px;
+}
+
+.card{
+    width:140px;
+    height:200px;
+    background:#fff;
+    border-radius:12px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.4);
+    position:relative;
+    transition:0.3s;
+}
+
+.card:hover{
+    transform:translateY(-10px);
+}
+
+.top{
+    position:absolute;
+    top:10px;
+    left:10px;
+    font-size:24px;
+    font-weight:bold;
+    line-height:1;
+}
+
+.bottom{
+    position:absolute;
+    bottom:10px;
+    right:10px;
+    font-size:24px;
+    font-weight:bold;
+    transform:rotate(180deg);
+    line-height:1;
+}
+
+.center{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    font-size:60px;
+}
+
+.red{
+    color:red;
+}
+
+.black{
+    color:black;
+}
+</style>
+
+</head>
+<body>
+    <h1 style="position:absolute; top:250px; color:white;">A PAGE OF PLAYING CARDS</h1>
+
+<div class="cards">
+
+    <!-- Ace of Spades -->
+    <div class="card">
+        <div class="top black">A<br>♠</div>
+        <div class="center black">♠</div>
+        <div class="bottom black">A<br>♠</div>
+    </div>
+
+    <!-- King of Hearts -->
+    <div class="card">
+        <div class="top red">K<br>♥</div>
+        <div class="center red">♥</div>
+        <div class="bottom red">K<br>♥</div>
+    </div>
+
+    <!-- Queen of Diamonds -->
+    <div class="card">
+        <div class="top red">Q<br>♦</div>
+        <div class="center red">♦</div>
+        <div class="bottom red">Q<br>♦</div>
+    </div>
+
+    <!-- Jack of Clubs -->
+    <div class="card">
+        <div class="top black">J<br>♣</div>
+        <div class="center black">♣</div>
+        <div class="bottom black">J<br>♣</div>
+    </div>
+
+</div>
+
+</body>
+</html>
