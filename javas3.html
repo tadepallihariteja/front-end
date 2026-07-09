@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>JavaScript Async Programming & APIs</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial, sans-serif;
+}
+
+body{
+background:#f2f4f8;
+padding:30px;
+}
+
+.container{
+width:90%;
+max-width:1000px;
+margin:auto;
+}
+
+h1{
+text-align:center;
+color:#0d6efd;
+margin-bottom:20px;
+}
+
+.card{
+
+background:white;
+
+padding:20px;
+
+margin-bottom:20px;
+
+border-radius:10px;
+
+box-shadow:0 2px 10px rgba(0,0,0,0.2);
+
+}
+
+button{
+
+padding:12px 18px;
+
+background:#0d6efd;
+
+color:white;
+
+border:none;
+
+border-radius:5px;
+
+cursor:pointer;
+
+margin:5px;
+
+}
+
+button:hover{
+
+background:#084298;
+
+}
+
+#output{
+
+margin-top:20px;
+
+padding:15px;
+
+background:#f8f9fa;
+
+border:1px solid #ddd;
+
+border-radius:5px;
+
+min-height:80px;
+
+}
+
+table{
+
+width:100%;
+
+border-collapse:collapse;
+
+margin-top:15px;
+
+}
+
+table,th,td{
+
+border:1px solid #ccc;
+
+}
+
+th{
+
+background:#0d6efd;
+
+color:white;
+
+padding:10px;
+
+}
+
+td{
+
+padding:10px;
+
+text-align:center;
+
+}
+
+.loading{
+
+color:green;
+
+font-weight:bold;
+
+}
+
+.error{
+
+color:red;
+
+font-weight:bold;
+
+}
+
+.success{
+
+color:green;
+
+font-weight:bold;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>JavaScript Async Programming & APIs</h1>
+
+<div class="card">
+
+<h2>Choose Any Demo</h2>
+
+<button onclick="callbackDemo()">
+
+Callback
+
+</button>
+
+<button onclick="promiseDemo()">
+
+Promise
+
+</button>
+
+<button onclick="asyncDemo()">
+
+Async / Await
+
+</button>
+
+<button onclick="fetchUsers()">
+
+Fetch API
+
+</button>
+
+<button onclick="errorDemo()">
+
+Error Handling
+
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>Output</h2>
+
+<div id="output">
+
+Click any button to see the output...
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>Users From API</h2>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>ID</th>
+
+<th>Name</th>
+
+<th>Email</th>
+
+</tr>
+
+</thead>
+
+<tbody id="tableBody">
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<script>
+
+// ==========================================
+// Output Box
+// ==========================================
+
+let output = document.getElementById("output");
+
+// ==========================================
+// 1. CALLBACK
+// ==========================================
+
+function greet(name, callback){
+
+    output.innerHTML = "<p class='loading'>Loading...</p>";
+
+    setTimeout(function(){
+
+        callback("Hello " + name + "! Welcome to JavaScript.");
+
+    },2000);
+
+}
+
+function callbackDemo(){
+
+    greet("Bhargavi", function(message){
+
+        output.innerHTML = "<p class='success'>" + message + "</p>";
+
+    });
+
+}
+
+// ==========================================
+// 2. PROMISE
+// ==========================================
+
+function registerStudent(){
+
+    return new Promise(function(resolve,reject){
+
+        output.innerHTML = "<p class='loading'>Registering Student...</p>";
+
+        let success = true;
+
+        setTimeout(function(){
+
+            if(success){
+
+                resolve("Student Registration Successful ✅");
+
+            }
+
+            else{
+
+                reject("Student Registration Failed ❌");
+
+            }
+
+        },2000);
+
+    });
+
+}
+
+function promiseDemo(){
+
+    registerStudent()
+
+    .then(function(result){
+
+        output.innerHTML = "<p class='success'>" + result + "</p>";
+
+    })
+
+    .catch(function(error){
+
+        output.innerHTML = "<p class='error'>" + error + "</p>";
+
+    });
+
+}
+
+// ==========================================
+// 3. ASYNC / AWAIT
+// ==========================================
+
+async function asyncDemo(){
+
+    output.innerHTML = "<p class='loading'>Loading Student Data...</p>";
+
+    try{
+
+        let result = await registerStudent();
+
+        output.innerHTML = "<p class='success'>" + result + "</p>";
+
+    }
+
+    catch(error){
+
+        output.innerHTML = "<p class='error'>" + error + "</p>";
+
+    }
+
+}
+// ==========================================
+// 4. FETCH API + JSON
+// ==========================================
+
+async function fetchUsers(){
+
+    output.innerHTML = "<p class='loading'>Fetching Users...</p>";
+
+    try{
+
+        // Step 1: Request data from API
+        let response = await fetch("https://jsonplaceholder.typicode.com/users");
+
+        // Step 2: Convert JSON response to JavaScript object
+        let users = await response.json();
+
+        // Step 3: Clear old table data
+        document.getElementById("tableBody").innerHTML = "";
+
+        // Step 4: Display users in the table
+        users.forEach(function(user){
+
+            let row = `
+            <tr>
+                <td>${user.id}</td>
+                <td>${user.name}</td>
+                <td>${user.email}</td>
+            </tr>
+            `;
+
+            document.getElementById("tableBody").innerHTML += row;
+
+        });
+
+        output.innerHTML = "<p class='success'>Users Loaded Successfully ✅</p>";
+
+    }
+
+    catch(error){
+
+        output.innerHTML = "<p class='error'>"+error+"</p>";
+
+    }
+
+}
+
+
+// ==========================================
+// 5. ERROR HANDLING
+// ==========================================
+
+async function errorDemo(){
+
+    output.innerHTML = "<p class='loading'>Checking Error Handling...</p>";
+
+    try{
+
+        // Wrong API URL to generate an error
+        let response = await fetch("https://jsonplaceholder.typicode.com/abc");
+
+        if(!response.ok){
+
+            throw new Error("404 Page Not Found");
+
+        }
+
+    }
+
+    catch(error){
+
+        output.innerHTML =
+
+        "<p class='error'>"+error.message+"</p>";
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>

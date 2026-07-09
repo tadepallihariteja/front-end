@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campus Ledger — Student Management System</title>
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   A campus-registrar theme: ink navy + amber "stamp" accent,
+   paper-cream surface in light mode, deep ink surface in dark.
+   The signature element is the "ID card" style student card —
+   a perforated top edge like a campus badge, with a course-
+   coded stripe down the left side.
+   ============================================================ */
+:root {
+  --ink-900: #182338;
+  --ink-800: #1f2c47;
+  --ink-700: #2c3c5e;
+  --paper-0: #faf6ec;
+  --paper-100: #f2ecdd;
+  --paper-200: #e8dfc9;
+  --accent: #e0983a;      /* amber stamp — can be re-themed live */
+  --accent-dark: #b9752a;
+  --sage: #6f9179;
+  --danger: #c4483f;
+  --success: #3f8f5f;
+  --text-main: var(--ink-900);
+  --text-sub: #5b6478;
+  --surface: #ffffff;
+  --surface-alt: var(--paper-100);
+  --bg: var(--paper-0);
+  --border: #ddd3ba;
+  --shadow: 0 10px 30px -12px rgba(24, 35, 56, 0.25);
+  --radius: 14px;
+  --font-display: Georgia, 'Iowan Old Style', 'Palatino Linotype', serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+}
+
+/* Dark mode overrides — toggled by adding .dark-mode to <body> */
+body.dark-mode {
+  --text-main: #eef1f7;
+  --text-sub: #a8b1c4;
+  --surface: var(--ink-800);
+  --surface-alt: var(--ink-700);
+  --bg: var(--ink-900);
+  --border: #35456a;
+  --shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.55);
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text-main);
+  transition: background 0.35s ease, color 0.35s ease;
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
+
+a { color: inherit; }
+
+::selection { background: var(--accent); color: #fff; }
+
+/* ============================================================
+   LAYOUT SHELL
+   ============================================================ */
+.wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+/* ---- Top bar ---- */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 0 18px;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-mark {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  background: linear-gradient(155deg, var(--accent), var(--accent-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 20px;
+  box-shadow: var(--shadow);
+  flex-shrink: 0;
+}
+
+.brand-text h1 {
+  font-family: var(--font-display);
+  font-size: 26px;
+  letter-spacing: 0.2px;
+}
+
+.brand-text p {
+  font-size: 12.5px;
+  color: var(--text-sub);
+  text-transform: uppercase;
+  letter-spacing: 1.6px;
+  margin-top: 2px;
+}
+
+.topbar-controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+/* Accent color theming swatches */
+.swatches {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 10px;
+  background: var(--surface-alt);
+  border-radius: 999px;
+  border: 1px solid var(--border);
+}
+
+.swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.swatch:hover { transform: scale(1.15); }
+.swatch.active { border-color: var(--text-main); }
+
+/* Dark mode toggle switch */
+.toggle-dark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+  transition: background 0.2s ease;
+}
+
+.toggle-dark:hover { background: var(--border); }
+
+/* ============================================================
+   GRID: form (left, sticky) + management (right)
+   ============================================================ */
+.main-grid {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 28px;
+  align-items: start;
+}
+
+@media (max-width: 880px) {
+  .main-grid { grid-template-columns: 1fr; }
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 26px;
+}
+
+.panel.sticky { position: sticky; top: 24px; }
+
+.panel h2 {
+  font-family: var(--font-display);
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+.panel .subtext {
+  font-size: 12.5px;
+  color: var(--text-sub);
+  margin-bottom: 20px;
+}
+
+/* ---- Form fields ---- */
+.field {
+  margin-bottom: 16px;
+}
+
+.field label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-sub);
+  margin-bottom: 6px;
+}
+
+.field input,
+.field select {
+  width: 100%;
+  padding: 11px 13px;
+  border-radius: 9px;
+  border: 1.5px solid var(--border);
+  background: var(--bg);
+  color: var(--text-main);
+  font-size: 14.5px;
+  font-family: var(--font-body);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.field input:focus,
+.field select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.field .error-hint {
+  font-size: 12px;
+  color: var(--danger);
+  margin-top: 5px;
+  min-height: 14px;
+}
+
+/* ---- Buttons ---- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: 9px;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
+  font-family: var(--font-body);
+}
+
+.btn:active { transform: translateY(1px) scale(0.98); }
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  width: 100%;
+  box-shadow: 0 8px 18px -6px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+
+.btn-primary:hover { background: var(--accent-dark); }
+.btn-primary:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+
+.btn-secondary {
+  background: var(--surface-alt);
+  color: var(--text-main);
+  border: 1.5px solid var(--border);
+}
+
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent-dark); }
+
+.btn-danger-ghost {
+  background: transparent;
+  border: 1.5px solid var(--danger);
+  color: var(--danger);
+  padding: 7px 12px;
+  font-size: 12.5px;
+}
+
+.btn-danger-ghost:hover { background: var(--danger); color: #fff; }
+
+/* ---- Toast messages (success / error) ---- */
+.toast {
+  border-radius: 9px;
+  padding: 12px 15px;
+  font-size: 13.5px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  animation: slideIn 0.3s ease;
+}
+
+.toast.show { display: flex; }
+
+.toast.success { background: color-mix(in srgb, var(--success) 16%, transparent); color: var(--success); border: 1px solid color-mix(in srgb, var(--success) 40%, transparent); }
+.toast.error { background: color-mix(in srgb, var(--danger) 16%, transparent); color: var(--danger); border: 1px solid color-mix(in srgb, var(--danger) 40%, transparent); }
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- Async demo log (shows callback / promise / async-await steps) ---- */
+.demo-log {
+  margin-top: 18px;
+  background: var(--bg);
+  border: 1px dashed var(--border);
+  border-radius: 9px;
+  padding: 12px 14px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-sub);
+  max-height: 130px;
+  overflow-y: auto;
+}
+
+.demo-log div { padding: 2px 0; }
+.demo-log .tag { color: var(--accent-dark); font-weight: 700; }
+
+/* ---- Management header row ---- */
+.mgmt-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.mgmt-title-group { display: flex; align-items: center; gap: 14px; }
+
+.count-badge {
+  background: var(--ink-900);
+  color: var(--paper-0);
+  font-family: var(--font-display);
+  font-size: 20px;
+  border-radius: 10px;
+  padding: 6px 16px;
+  min-width: 54px;
+  text-align: center;
+}
+
+body.dark-mode .count-badge { background: var(--accent); color: #1a1408; }
+
+.search-box {
+  position: relative;
+  flex: 1;
+  min-width: 220px;
+  max-width: 340px;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 10px 14px 10px 36px;
+  border-radius: 9px;
+  border: 1.5px solid var(--border);
+  background: var(--surface-alt);
+  color: var(--text-main);
+  font-size: 14px;
+}
+
+.search-box input:focus { outline: none; border-color: var(--accent); }
+
+.search-box::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  border: 2px solid var(--text-sub);
+  border-radius: 50%;
+  transform: translateY(-60%);
+}
+
+.search-box::after {
+  content: "";
+  position: absolute;
+  left: 20px;
+  top: 62%;
+  width: 6px;
+  height: 2px;
+  background: var(--text-sub);
+  transform: rotate(45deg);
+}
+
+/* ---- Student card grid (the "ID card" signature element) ---- */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 18px;
+}
+
+.student-card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 16px 16px 20px;
+  overflow: hidden;
+  animation: cardIn 0.35s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.student-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow);
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Course-coded stripe down the left edge, like a badge lanyard color */
+.student-card::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 6px;
+  background: var(--stripe-color, var(--accent));
+}
+
+/* Perforated top edge — a row of little "punch holes" like an ID badge */
+.perforation {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 10px;
+  margin-left: -2px;
+}
+
+.perforation span {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+
+.student-card h3 {
+  font-family: var(--font-display);
+  font-size: 17px;
+  margin-bottom: 4px;
+}
+
+.student-card .meta-row {
+  font-size: 12.5px;
+  color: var(--text-sub);
+  margin-bottom: 3px;
+  word-break: break-word;
+}
+
+.pill {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--surface-alt);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: var(--text-sub);
+}
+
+.card-footer {
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.age-tag {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-sub);
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 50px 20px;
+  color: var(--text-sub);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+}
+
+.empty-state strong { color: var(--text-main); display: block; margin-bottom: 6px; font-family: var(--font-display); font-size: 16px; }
+
+/* ---- API / directory section ---- */
+.api-section { margin-top: 34px; }
+
+.api-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.api-header p { color: var(--text-sub); font-size: 13px; max-width: 460px; }
+
+.directory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 16px;
+}
+
+.directory-card {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  transition: transform 0.2s ease;
+}
+
+.directory-card:hover { transform: translateY(-3px); }
+
+.directory-card .avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--sage), var(--accent));
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700;
+  margin-bottom: 10px;
+  font-family: var(--font-display);
+}
+
+.directory-card h4 { font-size: 14.5px; margin-bottom: 3px; }
+.directory-card p { font-size: 12px; color: var(--text-sub); }
+
+/* ---- Loading spinner ---- */
+.spinner {
+  width: 16px; height: 16px;
+  border: 2.5px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+.spinner.dark { border: 2.5px solid var(--border); border-top-color: var(--accent); }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.spinner-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 40px 0;
+  color: var(--text-sub);
+  font-size: 13.5px;
+  grid-column: 1 / -1;
+}
+
+footer.site-footer {
+  text-align: center;
+  color: var(--text-sub);
+  font-size: 12px;
+  margin-top: 60px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- ============================================================
+       TOP BAR: brand, accent color theming, dark mode toggle
+       ============================================================ -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">CL</div>
+      <div class="brand-text">
+        <h1>Campus Ledger</h1>
+        <p>Student Management System</p>
+      </div>
+    </div>
+    <div class="topbar-controls">
+      <div class="swatches" id="swatchRow" title="Theme accent color">
+        <div class="swatch active" style="background:#e0983a" data-color="#e0983a,#b9752a"></div>
+        <div class="swatch" style="background:#4d7ea8" data-color="#4d7ea8,#375c7d"></div>
+        <div class="swatch" style="background:#6f9179" data-color="#6f9179,#4f6e59"></div>
+        <div class="swatch" style="background:#a15c8c" data-color="#a15c8c,#7d4569"></div>
+      </div>
+      <button class="toggle-dark" id="darkModeToggle" type="button">
+        <span id="darkModeIcon">🌙</span>
+        <span id="darkModeLabel">Dark Mode</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="main-grid">
+
+    <!-- ============================================================
+         LEFT PANEL: Student Registration Form
+         ============================================================ -->
+    <section class="panel sticky">
+      <h2>Register a Student</h2>
+      <p class="subtext">New entries are validated, then saved through an async registration pipeline.</p>
+
+      <!-- Toast messages for success / error feedback -->
+      <div class="toast success" id="successToast">✅ <span id="successToastText"></span></div>
+      <div class="toast error" id="errorToast">⚠️ <span id="errorToastText"></span></div>
+
+      <form id="registerForm" novalidate>
+        <div class="field">
+          <label for="studentName">Student Name</label>
+          <input type="text" id="studentName" placeholder="e.g. Ariana Cole" autocomplete="off">
+          <div class="error-hint" id="nameError"></div>
+        </div>
+        <div class="field">
+          <label for="studentEmail">Email</label>
+          <input type="email" id="studentEmail" placeholder="e.g. ariana@campus.edu" autocomplete="off">
+          <div class="error-hint" id="emailError"></div>
+        </div>
+        <div class="field">
+          <label for="studentCourse">Course</label>
+          <select id="studentCourse">
+            <option value="">Select a course</option>
+            <option value="Computer Science">Computer Science</option>
+            <option value="Mechanical Engineering">Mechanical Engineering</option>
+            <option value="Business Administration">Business Administration</option>
+            <option value="Fine Arts">Fine Arts</option>
+            <option value="Biology">Biology</option>
+          </select>
+          <div class="error-hint" id="courseError"></div>
+        </div>
+        <div class="field">
+          <label for="studentAge">Age</label>
+          <input type="number" id="studentAge" placeholder="e.g. 21" min="15" max="80">
+          <div class="error-hint" id="ageError"></div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="registerBtn">
+          <span id="registerBtnText">Register Student</span>
+        </button>
+      </form>
+
+      <!-- Live log showing each async-programming stage as it fires -->
+      <div class="demo-log" id="demoLog">
+        <div><span class="tag">[log]</span> Waiting for registration…</div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         RIGHT PANEL: Student Management (search, count, cards)
+         ============================================================ -->
+    <section>
+      <div class="panel">
+        <div class="mgmt-header">
+          <div class="mgmt-title-group">
+            <h2 style="font-family:var(--font-display); font-size:20px;">Enrolled Students</h2>
+            <div class="count-badge" id="studentCount">0</div>
+          </div>
+          <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Search by name, email or course…">
+          </div>
+        </div>
+
+        <div class="card-grid" id="studentGrid">
+          <!-- Student cards are rendered here dynamically by JavaScript -->
+          <div class="empty-state" id="emptyState">
+            <strong>No students yet</strong>
+            Register your first student using the form on the left.
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================
+           API SECTION: fetch(), async/await, JSON, error handling
+           ============================================================ -->
+      <div class="panel api-section">
+        <div class="api-header">
+          <div>
+            <h2>Public Directory (Live API)</h2>
+            <p>Pulls sample records from a public REST API to demonstrate fetch, async/await and JSON parsing.</p>
+          </div>
+          <button class="btn btn-secondary" id="loadApiBtn" type="button">
+            <span id="loadApiBtnText">⇩ Load Students from API</span>
+          </button>
+        </div>
+        <div class="directory-grid" id="directoryGrid"></div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="site-footer">
+    Campus Ledger — built with vanilla HTML, CSS &amp; JavaScript. No frameworks involved.
+  </footer>
+</div>
+
+<script>
+/* ================================================================
+   STATE
+   ================================================================ */
+
+// In-memory list of registered students. Each entry:
+// { id, name, email, course, age }
+let students = [];
+
+// Simple incrementing id generator for locally-added students.
+let nextStudentId = 1;
+
+// Colors used for the course-coded stripe on each student card.
+const courseColors = {
+  "Computer Science": "#4d7ea8",
+  "Mechanical Engineering": "#c4483f",
+  "Business Administration": "#e0983a",
+  "Fine Arts": "#a15c8c",
+  "Biology": "#6f9179"
+};
+
+/* ================================================================
+   DOM REFERENCES
+   ================================================================ */
+const registerForm     = document.getElementById('registerForm');
+const registerBtn      = document.getElementById('registerBtn');
+const registerBtnText  = document.getElementById('registerBtnText');
+const studentGrid      = document.getElementById('studentGrid');
+const emptyState       = document.getElementById('emptyState');
+const studentCountEl   = document.getElementById('studentCount');
+const searchInput      = document.getElementById('searchInput');
+const successToast     = document.getElementById('successToast');
+const successToastText = document.getElementById('successToastText');
+const errorToast       = document.getElementById('errorToast');
+const errorToastText   = document.getElementById('errorToastText');
+const demoLog          = document.getElementById('demoLog');
+const loadApiBtn       = document.getElementById('loadApiBtn');
+const loadApiBtnText   = document.getElementById('loadApiBtnText');
+const directoryGrid    = document.getElementById('directoryGrid');
+
+/* ================================================================
+   UTILITY: demo log writer
+   Every async-programming step (callback / promise / async-await)
+   writes a short line here so the flow is visible to the learner.
+   ================================================================ */
+function logStep(label, message) {
+  const line = document.createElement('div');
+  line.innerHTML = `<span class="tag">[${label}]</span> ${message}`;
+  demoLog.appendChild(line);
+  demoLog.scrollTop = demoLog.scrollHeight;
+}
+
+/* ================================================================
+   UTILITY: toast messages (success / error)
+   ================================================================ */
+function showSuccess(message) {
+  successToastText.textContent = message;
+  successToast.classList.add('show');
+  errorToast.classList.remove('show');
+  setTimeout(() => successToast.classList.remove('show'), 3500);
+}
+
+function showError(message) {
+  errorToastText.textContent = message;
+  errorToast.classList.add('show');
+  successToast.classList.remove('show');
+  setTimeout(() => errorToast.classList.remove('show'), 4500);
+}
+
+/* ================================================================
+   FORM VALIDATION
+   Plain synchronous validation — checked before any async work
+   is kicked off, so we never "register" incomplete data.
+   ================================================================ */
+function validateForm(data) {
+  let valid = true;
+  document.getElementById('nameError').textContent = '';
+  document.getElementById('emailError').textContent = '';
+  document.getElementById('courseError').textContent = '';
+  document.getElementById('ageError').textContent = '';
+
+  if (!data.name || data.name.trim().length < 2) {
+    document.getElementById('nameError').textContent = 'Enter a name with at least 2 characters.';
+    valid = false;
+  }
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailPattern.test(data.email)) {
+    document.getElementById('emailError').textContent = 'Enter a valid email address.';
+    valid = false;
+  }
+  if (!data.course) {
+    document.getElementById('courseError').textContent = 'Select a course.';
+    valid = false;
+  }
+  const ageNum = Number(data.age);
+  if (!data.age || isNaN(ageNum) || ageNum < 15 || ageNum > 80) {
+    document.getElementById('ageError').textContent = 'Enter an age between 15 and 80.';
+    valid = false;
+  }
+  return valid;
+}
+
+/* ================================================================
+   TOPIC 1 — CALLBACKS
+   confirmRegistrationCallback() simulates a follow-up notification
+   step that must run strictly AFTER a student has been saved.
+   It follows classic Node-style callback convention:
+   callback(error, result) — error is null on success.
+   ================================================================ */
+function confirmRegistrationCallback(student, callback) {
+  logStep('callback', `Queuing confirmation notice for ${student.name}…`);
+  // setTimeout simulates a real-world delay (e.g. sending an email/SMS)
+  setTimeout(() => {
+    // Simulate a callback firing with (error, result) signature
+    const error = null;
+    const result = `Confirmation notice queued for ${student.email}`;
+    callback(error, result);
+  }, 500);
+}
+
+/* ================================================================
+   TOPIC 2 — PROMISES
+   registerStudentPromise() wraps the "save to system" step in a
+   native Promise. It resolves with the saved student object, or
+   rejects if something goes wrong (simulated failure chance kept
+   at 0% here so registration is reliable, but the reject path is
+   fully wired up and used by the try/catch block below).
+   ================================================================ */
+function registerStudentPromise(studentData) {
+  return new Promise((resolve, reject) => {
+    logStep('promise', `Saving ${studentData.name} to the student ledger…`);
+    setTimeout(() => {
+      // Duplicate-email guard — a realistic reason a save could fail
+      const duplicate = students.some(s => s.email.toLowerCase() === studentData.email.toLowerCase());
+      if (duplicate) {
+        reject(new Error('A student with this email is already registered.'));
+        return;
+      }
+      const savedStudent = {
+        id: nextStudentId++,
+        name: studentData.name.trim(),
+        email: studentData.email.trim(),
+        course: studentData.course,
+        age: Number(studentData.age)
+      };
+      resolve(savedStudent);
+    }, 900);
+  });
+}
+
+/* ================================================================
+   TOPIC 3 & 6 — ASYNC/AWAIT + TRY...CATCH
+   handleRegisterSubmit() is the async form handler. It awaits the
+   Promise-based save step, then (on success) triggers the callback-
+   based confirmation step. Any rejection is caught here so the UI
+   always recovers gracefully instead of hanging or crashing.
+   ================================================================ */
+async function handleRegisterSubmit(event) {
+  event.preventDefault();
+
+  const formData = {
+    name: document.getElementById('studentName').value,
+    email: document.getElementById('studentEmail').value,
+    course: document.getElementById('studentCourse').value,
+    age: document.getElementById('studentAge').value
+  };
+
+  if (!validateForm(formData)) {
+    return;
+  }
+
+  // TOPIC 7 — LOADING SPINNER while the async pipeline runs
+  registerBtn.disabled = true;
+  registerBtnText.innerHTML = '<span class="spinner"></span> Registering…';
+
+  try {
+    // async/await used here to consume the Promise linearly,
+    // instead of chaining .then()/.catch()
+    const savedStudent = await registerStudentPromise(formData);
+
+    logStep('async/await', `Registration resolved for ${savedStudent.name}.`);
+
+    // Add to local state + re-render the card grid
+    students.push(savedStudent);
+    renderStudents();
+
+    // Fire the callback-style confirmation step AFTER registration
+    confirmRegistrationCallback(savedStudent, (error, result) => {
+      if (error) {
+        logStep('callback', `Confirmation failed: ${error.message}`);
+        return;
+      }
+      logStep('callback', result);
+      showSuccess(`${savedStudent.name} registered successfully!`);
+    });
+
+    registerForm.reset();
+  } catch (err) {
+    // try...catch handles any rejection from registerStudentPromise
+    logStep('catch', `Registration failed — ${err.message}`);
+    showError(err.message);
+  } finally {
+    registerBtn.disabled = false;
+    registerBtnText.textContent = 'Register Student';
+  }
+}
+
+registerForm.addEventListener('submit', handleRegisterSubmit);
+
+/* ================================================================
+   RENDERING: student cards
+   ================================================================ */
+function renderStudents(filterText) {
+  const query = (filterText || '').trim().toLowerCase();
+  const visible = query
+    ? students.filter(s =>
+        s.name.toLowerCase().includes(query) ||
+        s.email.toLowerCase().includes(query) ||
+        s.course.toLowerCase().includes(query))
+    : students;
+
+  studentCountEl.textContent = students.length;
+
+  if (visible.length === 0) {
+    studentGrid.innerHTML = '';
+    const message = students.length === 0
+      ? { title: 'No students yet', body: 'Register your first student using the form on the left.' }
+      : { title: 'No matches found', body: 'Try a different name, email or course.' };
+    studentGrid.innerHTML = `
+      <div class="empty-state">
+        <strong>${message.title}</strong>
+        ${message.body}
+      </div>`;
+    return;
+  }
+
+  // Build each card's HTML. Event delegation (below) handles clicks,
+  // so no inline onclick handlers are attached here.
+  studentGrid.innerHTML = visible.map(student => {
+    const stripe = courseColors[student.course] || 'var(--accent)';
+    return `
+      <div class="student-card" style="--stripe-color:${stripe}" data-id="${student.id}">
+        <div class="perforation">
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <h3>${escapeHtml(student.name)}</h3>
+        <div class="meta-row">${escapeHtml(student.email)}</div>
+        <div class="meta-row">${escapeHtml(student.course)}</div>
+        <span class="pill">Student #${student.id}</span>
+        <div class="card-footer">
+          <span class="age-tag">Age ${student.age}</span>
+          <button class="btn-danger-ghost" data-action="delete" data-id="${student.id}">Remove</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* Escape user-entered text before injecting into innerHTML,
+   to keep the rendering safe from markup injection. */
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+/* ================================================================
+   EVENT DELEGATION
+   A single click listener on the grid's parent container handles
+   every "Remove" button, including ones added long after page load.
+   This avoids re-binding a listener on every render.
+   ================================================================ */
+studentGrid.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-action="delete"]');
+  if (!button) return;
+
+  const id = Number(button.getAttribute('data-id'));
+  const student = students.find(s => s.id === id);
+  students = students.filter(s => s.id !== id);
+  renderStudents(searchInput.value);
+
+  if (student) {
+    showSuccess(`${student.name} was removed from the ledger.`);
+  }
+});
+
+/* ================================================================
+   LIVE SEARCH
+   Filters the rendered card grid on every keystroke.
+   ================================================================ */
+searchInput.addEventListener('input', () => {
+  renderStudents(searchInput.value);
+});
+
+/* ================================================================
+   TOPIC 4, 5 & 6 — fetch(), JSON handling, try...catch
+   loadStudentsFromApi() is an async function that:
+     1. Shows a loading spinner on the button
+     2. Uses fetch() to call a public REST API
+     3. Checks response.ok before proceeding
+     4. Converts the response body with response.json()
+     5. Renders the resulting records as directory cards
+     6. Wraps everything in try...catch so network failures,
+        bad responses, or malformed JSON never break the page
+   ================================================================ */
+async function loadStudentsFromApi() {
+  loadApiBtn.disabled = true;
+  loadApiBtnText.innerHTML = '<span class="spinner dark"></span> Loading…';
+
+  directoryGrid.innerHTML = `
+    <div class="spinner-row">
+      <span class="spinner dark"></span> Fetching student directory from the API…
+    </div>`;
+
+  try {
+    // fetch() issues the HTTP GET request
+    const response = await fetch('https://jsonplaceholder.typicode.com/users');
+
+    // A non-2xx response does not automatically throw — check manually
+    if (!response.ok) {
+      throw new Error(`Server responded with status ${response.status}`);
+    }
+
+    // JSON handling: convert the raw response body into JS objects
+    const users = await response.json();
+
+    renderDirectory(users);
+    showSuccess(`Loaded ${users.length} directory records from the API.`);
+  } catch (err) {
+    // Catches network failures, non-OK statuses, and JSON parse errors
+    directoryGrid.innerHTML = `
+      <div class="empty-state">
+        <strong>Could not load the directory</strong>
+        ${escapeHtml(err.message)} — check your connection and try again.
+      </div>`;
+    showError(`API request failed: ${err.message}`);
+  } finally {
+    loadApiBtn.disabled = false;
+    loadApiBtnText.textContent = '⇩ Load Students from API';
+  }
+}
+
+/* Render the fetched API users as directory cards showing
+   Name, Email and Company — as required. */
+function renderDirectory(users) {
+  directoryGrid.innerHTML = users.map(user => {
+    const initials = user.name.split(' ').map(part => part[0]).slice(0, 2).join('');
+    return `
+      <div class="directory-card">
+        <div class="avatar">${escapeHtml(initials)}</div>
+        <h4>${escapeHtml(user.name)}</h4>
+        <p>${escapeHtml(user.email)}</p>
+        <p>${escapeHtml(user.company ? user.company.name : 'Independent')}</p>
+      </div>`;
+  }).join('');
+}
+
+loadApiBtn.addEventListener('click', loadStudentsFromApi);
+
+/* ================================================================
+   DARK MODE TOGGLE
+   ================================================================ */
+const darkModeToggle = document.getElementById('darkModeToggle');
+const darkModeIcon    = document.getElementById('darkModeIcon');
+const darkModeLabel   = document.getElementById('darkModeLabel');
+
+darkModeToggle.addEventListener('click', () => {
+  document.body.classList.toggle('dark-mode');
+  const isDark = document.body.classList.contains('dark-mode');
+  darkModeIcon.textContent = isDark ? '☀️' : '🌙';
+  darkModeLabel.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+});
+
+/* ================================================================
+   ACCENT COLOR THEMING
+   Clicking a swatch updates the CSS custom properties driving the
+   accent color across buttons, badges and card stripes.
+   ================================================================ */
+const swatchRow = document.getElementById('swatchRow');
+
+swatchRow.addEventListener('click', (event) => {
+  const swatch = event.target.closest('.swatch');
+  if (!swatch) return;
+
+  const [accent, accentDark] = swatch.getAttribute('data-color').split(',');
+  document.documentElement.style.setProperty('--accent', accent);
+  document.documentElement.style.setProperty('--accent-dark', accentDark);
+
+  swatchRow.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+  swatch.classList.add('active');
+});
+
+/* ================================================================
+   INITIAL RENDER
+   ================================================================ */
+renderStudents();
+logStep('init', 'Campus Ledger ready. Fill in the form to register a student.');
+</script>
+</body>
+</html>
